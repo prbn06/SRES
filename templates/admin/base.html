@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{% block title %}Admin{% endblock %} | SRES Admin</title>
+  <meta name="description" content="SRES Admin Portal">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+  <div class="flash-messages" id="flashMessages">
+    {% for cat,msg in messages %}
+    <div class="alert alert-{{ cat }}">
+      <span>{% if cat=='success' %}✓{% elif cat=='error' %}✕{% elif cat=='warning' %}⚠{% else %}ℹ{% endif %}</span>
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}{% endwith %}
+
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="sidebar-brand">SRES</div>
+          <div class="sidebar-brand-sub">Admin Panel</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">Main</div>
+        <a href="{{ url_for('admin_dashboard') }}"   class="sidebar-link {% if request.endpoint=='admin_dashboard'   %}active{% endif %}"><span class="icon">🏠</span> Dashboard</a>
+
+        <div class="sidebar-section">Management</div>
+        <a href="{{ url_for('admin_students') }}"    class="sidebar-link {% if request.endpoint=='admin_students'    %}active{% endif %}"><span class="icon">👥</span> Students</a>
+        <a href="{{ url_for('admin_courses') }}"     class="sidebar-link {% if request.endpoint in ['admin_courses','admin_add_course','admin_edit_course'] %}active{% endif %}"><span class="icon">📚</span> Courses</a>
+        <a href="{{ url_for('admin_enrollments') }}" class="sidebar-link {% if request.endpoint=='admin_enrollments' %}active{% endif %}"><span class="icon">📋</span> Enrollments</a>
+
+        <div class="sidebar-section">Analytics</div>
+        <a href="{{ url_for('admin_reports') }}"     class="sidebar-link {% if request.endpoint=='admin_reports'     %}active{% endif %}"><span class="icon">📊</span> Reports</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar">{{ session.admin_username[0].upper() if session.admin_username else 'A' }}</div>
+          <div>
+            <div class="sidebar-user-name">{{ session.admin_username }}</div>
+            <div class="sidebar-user-role">Administrator</div>
+          </div>
+        </div>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-block btn-sm">Logout</a>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="admin-main">
+      <!-- Topbar -->
+      <div class="admin-topbar">
+        <span class="topbar-title">{% block topbar_title %}Admin Panel{% endblock %}</span>
+        <div class="topbar-user">
+          <div class="user-avatar">{{ session.admin_username[0].upper() if session.admin_username else 'A' }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ session.admin_username }}</span>
+            <span class="user-role">Administrator</span>
+          </div>
+          <a href="{{ url_for('index') }}" class="btn btn-secondary btn-sm">🌐 Site</a>
+        </div>
+      </div>
+
+      <div class="admin-inner">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(()=>{const e=document.getElementById('flashMessages');if(e){e.style.transition='opacity .5s ease';e.style.opacity='0';setTimeout(()=>e.remove(),500);}},4500);
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block topbar_title %}📊 Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <h2 class="page-title">Dashboard</h2>
+  <p class="page-subtitle">Welcome back, <strong style="color:var(--primary-light);">{{ session.admin_username }}</strong> — here's what's happening today.</p>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">👥</div>
+    <div class="stat-number">{{ student_count }}</div>
+    <div class="stat-label">Total Students</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">📚</div>
+    <div class="stat-number">{{ course_count }}</div>
+    <div class="stat-label">Active Courses</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow">⏳</div>
+    <div class="stat-number">{{ pending_count }}</div>
+    <div class="stat-label">Pending Approvals</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">✅</div>
+    <div class="stat-number">{{ approved_count }}</div>
+    <div class="stat-label">Approved Enrollments</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">✕</div>
+    <div class="stat-number">{{ rejected_count }}</div>
+    <div class="stat-label">Rejected Enrollments</div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.75rem;">
+  <a href="{{ url_for('admin_enrollments', status='pending') }}" class="btn btn-warning">⏳ Review Pending ({{ pending_count }})</a>
+  <a href="{{ url_for('admin_add_course') }}" class="btn btn-primary">+ Add New Course</a>
+  <a href="{{ url_for('admin_students') }}" class="btn btn-secondary">👥 View All Students</a>
+  <a href="{{ url_for('admin_reports') }}" class="btn btn-secondary">📊 View Reports</a>
+</div>
+
+<!-- Recent Enrollments -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🕐 Recent Enrollment Activity</span>
+    <a href="{{ url_for('admin_enrollments') }}" class="btn btn-secondary btn-sm">View All</a>
+  </div>
+
+  {% if recent_enrollments %}
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Course</th>
+          <th>Status</th>
+          <th>Applied On</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in recent_enrollments %}
+        <tr>
+          <td><span class="student-id-badge" style="font-size:.72rem;">{{ e.stu_id }}</span></td>
+          <td><strong>{{ e.first_name }} {{ e.last_name }}</strong></td>
+          <td>
+            <span class="course-code-badge">{{ e.course_code }}</span>
+            <span style="margin-left:.35rem;font-size:.85rem;color:var(--text-secondary);">{{ e.course_name }}</span>
+          </td>
+          <td><span class="badge badge-{{ e.status }}">{% if e.status=='approved' %}✓{% elif e.status=='pending' %}⏳{% else %}✕{% endif %} {{ e.status|capitalize }}</span></td>
+          <td style="color:var(--text-muted);font-size:.8rem;">{{ e.enrolled_at[:16] }}</td>
+          <td>
+            {% if e.status == 'pending' %}
+            <div style="display:flex;gap:.4rem;">
+              <form method="POST" action="{{ url_for('admin_approve_enrollment', eid=e.id) }}">
+                <button type="submit" class="btn btn-success btn-sm">✓ Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin_reject_enrollment', eid=e.id) }}">
+                <button type="submit" class="btn btn-danger btn-sm">✕ Reject</button>
+              </form>
+            </div>
+            {% else %}
+            <span style="color:var(--text-muted);font-size:.8rem;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📭</div>
+    <h3>No enrollment activity yet</h3>
+    <p>Enrollment requests will appear here once students start registering.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

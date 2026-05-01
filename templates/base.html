@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SRES{% endblock %} | Student Registration & Enrollment System</title>
+  <meta name="description" content="Manage your courses, enrollments and student profile.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+  <div class="flash-messages" id="flashMessages">
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">
+      <span>{% if cat=='success' %}✓{% elif cat=='error' %}✕{% elif cat=='warning' %}⚠{% else %}ℹ{% endif %}</span>
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}{% endwith %}
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="{{ url_for('student_dashboard') }}" class="navbar-brand">
+        <div class="brand-icon">🎓</div>SRES
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="{{ url_for('student_dashboard') }}"   class="nav-link {% if request.endpoint=='student_dashboard'   %}active{% endif %}">🏠 Dashboard</a></li>
+        <li><a href="{{ url_for('student_courses') }}"     class="nav-link {% if request.endpoint=='student_courses'     %}active{% endif %}">📚 Courses</a></li>
+        <li><a href="{{ url_for('student_enrollments') }}" class="nav-link {% if request.endpoint=='student_enrollments' %}active{% endif %}">📋 Enrollments</a></li>
+        <li><a href="{{ url_for('student_profile') }}"     class="nav-link {% if request.endpoint=='student_profile'     %}active{% endif %}">👤 Profile</a></li>
+      </ul>
+      <div class="navbar-user">
+        <div class="user-avatar">{{ session.student_name[0].upper() if session.student_name else 'S' }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ session.student_name }}</span>
+          <span class="user-role">{{ session.student_uid }}</span>
+        </div>
+        <a href="{{ url_for('student_logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    setTimeout(() => {
+      const el = document.getElementById('flashMessages');
+      if (el) { el.style.transition='opacity .5s ease'; el.style.opacity='0'; setTimeout(()=>el.remove(),500); }
+    }, 4500);
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

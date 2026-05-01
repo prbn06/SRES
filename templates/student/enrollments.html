@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}My Enrollments{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <h2 class="page-title">📋 My Enrollments</h2>
+  <p class="page-subtitle">Track all your enrollment requests and their approval status</p>
+</div>
+
+<!-- Summary Stats -->
+{% set approved = enrollments | selectattr('status','equalto','approved') | list %}
+{% set pending  = enrollments | selectattr('status','equalto','pending')  | list %}
+{% set rejected = enrollments | selectattr('status','equalto','rejected') | list %}
+{% set total_cred = approved | sum(attribute='credits') %}
+
+<div class="stats-grid" style="margin-bottom:1.75rem;">
+  <div class="stat-card">
+    <div class="stat-icon green">✅</div>
+    <div class="stat-number">{{ approved|length }}</div>
+    <div class="stat-label">Approved</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow">⏳</div>
+    <div class="stat-number">{{ pending|length }}</div>
+    <div class="stat-label">Pending</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">✕</div>
+    <div class="stat-number">{{ rejected|length }}</div>
+    <div class="stat-label">Rejected</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">⭐</div>
+    <div class="stat-number">{{ total_cred }}</div>
+    <div class="stat-label">Approved Credits</div>
+  </div>
+</div>
+
+{% if enrollments %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">All Enrollment Requests ({{ enrollments|length }})</span>
+    <a href="{{ url_for('student_courses') }}" class="btn btn-primary btn-sm">+ Enroll in More</a>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Course Code</th>
+          <th>Course Name</th>
+          <th>Credits</th>
+          <th>Status</th>
+          <th>Applied On</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in enrollments %}
+        <tr>
+          <td style="color:var(--text-muted);">{{ loop.index }}</td>
+          <td><span class="course-code-badge">{{ e.course_code }}</span></td>
+          <td><strong>{{ e.course_name }}</strong></td>
+          <td><span class="badge badge-credit">{{ e.credits }} cr</span></td>
+          <td>
+            <span class="badge badge-{{ e.status }}">
+              {% if e.status=='approved' %}✓{% elif e.status=='pending' %}⏳{% else %}✕{% endif %}
+              {{ e.status|capitalize }}
+            </span>
+          </td>
+          <td style="color:var(--text-muted);font-size:.8rem;">{{ e.enrolled_at[:16] }}</td>
+          <td style="color:var(--text-muted);font-size:.8rem;">{{ e.updated_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">📭</div>
+  <h3>No enrollment requests yet</h3>
+  <p>Head to the Courses page to browse available courses and enroll.</p>
+  <a href="{{ url_for('student_courses') }}" class="btn btn-primary" style="margin-top:1rem;">Browse Courses →</a>
+</div>
+{% endif %}
+{% endblock %}

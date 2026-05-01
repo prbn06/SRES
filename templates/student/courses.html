@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Available Courses{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <h2 class="page-title">📚 Available Courses</h2>
+  <p class="page-subtitle">Browse all active courses and submit enrollment requests</p>
+</div>
+
+<!-- Legend -->
+<div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center;">
+  <span style="font-size:.8rem;color:var(--text-muted);">Status:</span>
+  <span class="badge badge-approved">✓ Enrolled</span>
+  <span class="badge badge-pending">⏳ Pending</span>
+  <span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-secondary);border:1px solid var(--border);">Not Enrolled</span>
+  <span class="badge badge-rejected">✕ Rejected</span>
+</div>
+
+{% if courses %}
+<div class="courses-grid">
+  {% for course in courses %}
+  {% set pct = ((course.enrolled_count / course.capacity) * 100)|int if course.capacity > 0 else 0 %}
+  {% set is_full = course.enrolled_count >= course.capacity %}
+
+  <div class="course-card">
+    <div class="course-code-badge">{{ course.course_code }}</div>
+    <div class="course-name">{{ course.course_name }}</div>
+    <p class="course-desc">{{ course.description }}</p>
+
+    <div class="course-meta">
+      <span class="badge badge-credit">{{ course.credits }} Credits</span>
+      {% if course.enrollment_status == 'approved' %}
+        <span class="badge badge-approved">✓ Enrolled</span>
+      {% elif course.enrollment_status == 'pending' %}
+        <span class="badge badge-pending">⏳ Pending</span>
+      {% elif course.enrollment_status == 'rejected' %}
+        <span class="badge badge-rejected">✕ Rejected</span>
+      {% elif is_full %}
+        <span class="badge" style="background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,.2);">🔒 Full</span>
+      {% else %}
+        <span class="badge" style="background:rgba(255,255,255,.05);color:var(--text-secondary);border:1px solid var(--border);">Open</span>
+      {% endif %}
+    </div>
+
+    <!-- Capacity Bar -->
+    <div class="capacity-bar">
+      <div class="capacity-fill {% if is_full %}full{% endif %}" style="width:{{ pct }}%;"></div>
+    </div>
+    <div class="capacity-text">{{ course.enrolled_count }} / {{ course.capacity }} seats filled ({{ pct }}%)</div>
+
+    <!-- Action Button -->
+    <div style="margin-top:1.25rem;">
+      {% if course.enrollment_status == 'approved' %}
+        <button class="btn btn-success btn-block btn-sm" disabled>✓ Already Enrolled</button>
+      {% elif course.enrollment_status == 'pending' %}
+        <button class="btn btn-warning btn-block btn-sm" disabled>⏳ Awaiting Approval</button>
+      {% elif course.enrollment_status == 'rejected' %}
+        <form method="POST" action="{{ url_for('student_enroll', course_id=course.id) }}">
+          <button type="submit" class="btn btn-secondary btn-block btn-sm">↩ Re-apply Enrollment</button>
+        </form>
+      {% elif is_full %}
+        <button class="btn btn-danger btn-block btn-sm" disabled>🔒 Course Full</button>
+      {% else %}
+        <form method="POST" action="{{ url_for('student_enroll', course_id=course.id) }}">
+          <button type="submit" class="btn btn-primary btn-block btn-sm">Enroll Now →</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">📭</div>
+  <h3>No courses available</h3>
+  <p>Check back later for available courses.</p>
+</div>
+{% endif %}
+
+{% endblock %}

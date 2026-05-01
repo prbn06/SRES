@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SRES | Student Registration & Enrollment System</title>
+  <meta name="description" content="Student Registration and Enrollment System — Register, enroll in courses, and manage your academic journey.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+  <div class="flash-messages" id="flashMessages">
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}"><span>{% if cat=='success' %}✓{% elif cat=='error' %}✕{% else %}⚠{% endif %}</span>{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}{% endwith %}
+
+  <div class="landing">
+    <!-- Top nav -->
+    <nav class="landing-nav">
+      <div class="navbar-brand">
+        <div class="brand-icon">🎓</div><span>SRES</span>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center;">
+        <a href="{{ url_for('student_login') }}" class="btn btn-secondary">Student Login</a>
+        <a href="{{ url_for('admin_login') }}"   class="btn btn-primary">Admin Portal</a>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-badge">✨ Academic Year 2025–26</div>
+      <h1 class="hero-title">Student Registration &amp;<br><span class="text-gradient">Enrollment System</span></h1>
+      <p class="hero-description">A comprehensive platform to manage student registrations, course enrollments, and academic records — all in one place.</p>
+      <div class="hero-actions">
+        <a href="{{ url_for('student_register') }}" class="btn btn-primary btn-lg">Get Started →</a>
+        <a href="{{ url_for('student_login') }}"    class="btn btn-secondary btn-lg">Student Login</a>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+      <h2 class="features-title">Everything You Need</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <div class="feature-title">Easy Registration</div>
+          <p class="feature-text">Register in minutes with auto-generated student IDs and secure password encryption.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <div class="feature-title">Course Enrollment</div>
+          <p class="feature-text">Browse all available courses and submit enrollment requests with real-time capacity tracking.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <div class="feature-title">Approval Workflow</div>
+          <p class="feature-text">Streamlined admin approval system to manage all enrollment requests efficiently.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Admin Reports</div>
+          <p class="feature-text">Comprehensive analytics and enrollment reports for efficient academic administration.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Login portal cards -->
+    <div class="login-cards">
+      <div class="login-card">
+        <div class="login-card-icon">👩‍🎓</div>
+        <div class="login-card-title">Student Portal</div>
+        <p class="login-card-text">Access your dashboard, enroll in courses, view enrollment status, and update your profile.</p>
+        <a href="{{ url_for('student_login') }}" class="btn btn-primary btn-block">Login as Student</a>
+        <p style="margin-top:1rem;font-size:.8rem;color:var(--text-muted);">
+          New student? <a href="{{ url_for('student_register') }}">Register here →</a>
+        </p>
+      </div>
+      <div class="login-card">
+        <div class="login-card-icon">🛡️</div>
+        <div class="login-card-title">Admin Portal</div>
+        <p class="login-card-text">Manage students, add or edit courses, approve enrollments, and generate detailed reports.</p>
+        <a href="{{ url_for('admin_login') }}" class="btn btn-secondary btn-block">Login as Admin</a>
+        <p style="margin-top:1rem;font-size:.8rem;color:var(--text-muted);">Default: <strong style="color:var(--primary-light)">admin</strong> / <strong style="color:var(--primary-light)">admin123</strong></p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="text-align:center;padding:2rem 1.75rem;border-top:1px solid var(--border);color:var(--text-muted);font-size:.8rem;">
+      © 2025 Student Registration &amp; Enrollment System &nbsp;·&nbsp; Built with Flask &amp; SQLite
+    </footer>
+  </div>
+
+  <script>
+    setTimeout(()=>{const e=document.getElementById('flashMessages');if(e){e.style.transition='opacity .5s ease';e.style.opacity='0';setTimeout(()=>e.remove(),500);}},4500);
+  </script>
+</body>
+</html>

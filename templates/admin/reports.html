@@ -1,0 +1,207 @@
+{% extends "admin/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block topbar_title %}📊 Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <h2 class="page-title">Reports & Analytics</h2>
+  <p class="page-subtitle">Comprehensive overview of enrollment activity and course statistics</p>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">👥</div>
+    <div class="stat-number">{{ total_students }}</div>
+    <div class="stat-label">Total Students</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">✅</div>
+    <div class="stat-number">{{ total_approved }}</div>
+    <div class="stat-label">Approved Enrollments</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow">⏳</div>
+    <div class="stat-number">{{ total_pending }}</div>
+    <div class="stat-label">Pending Requests</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">✕</div>
+    <div class="stat-number">{{ total_rejected }}</div>
+    <div class="stat-label">Rejected Requests</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">📋</div>
+    <div class="stat-number">{{ total_approved + total_pending + total_rejected }}</div>
+    <div class="stat-label">Total Requests</div>
+  </div>
+</div>
+
+<!-- Course Enrollment Statistics -->
+<div class="report-card animate-in">
+  <div class="report-card-header">
+    <span>📚</span>
+    <span class="report-card-title">Course Enrollment Statistics</span>
+  </div>
+
+  <div class="table-container" style="border:none;border-radius:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Course Name</th>
+          <th>Credits</th>
+          <th>Capacity</th>
+          <th>Approved</th>
+          <th>Pending</th>
+          <th>Rejected</th>
+          <th>Fill Rate</th>
+          <th>Availability</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in course_stats %}
+        {% set pct = ((c.enrolled_count / c.capacity) * 100)|int if c.capacity > 0 else 0 %}
+        {% set avail = c.capacity - c.enrolled_count %}
+        <tr>
+          <td><span class="course-code-badge">{{ c.course_code }}</span></td>
+          <td><strong>{{ c.course_name }}</strong></td>
+          <td><span class="badge badge-credit">{{ c.credits }} cr</span></td>
+          <td>{{ c.capacity }}</td>
+          <td><span style="color:var(--success);font-weight:700;">{{ c.enrolled_count }}</span></td>
+          <td><span style="color:var(--warning);font-weight:600;">{{ c.pending_cnt }}</span></td>
+          <td><span style="color:var(--danger);font-weight:600;">{{ c.rejected_cnt }}</span></td>
+          <td style="min-width:140px;">
+            <div style="display:flex;align-items:center;gap:.6rem;">
+              <div class="progress" style="flex:1;">
+                <div class="progress-bar" style="width:{{ pct }}%;background:{% if pct>=100 %}var(--danger){% elif pct>=75 %}var(--warning){% else %}var(--grad-primary){% endif %};"></div>
+              </div>
+              <span style="font-size:.75rem;color:var(--text-muted);min-width:35px;">{{ pct }}%</span>
+            </div>
+          </td>
+          <td>
+            {% if avail <= 0 %}
+            <span class="badge badge-rejected">Full</span>
+            {% elif avail <= 5 %}
+            <span class="badge badge-pending">{{ avail }} left</span>
+            {% else %}
+            <span class="badge badge-approved">{{ avail }} seats</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Program Distribution & Enrollment Breakdown -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+  <!-- Program Distribution -->
+  <div class="report-card">
+    <div class="report-card-header">
+      <span>🎓</span>
+      <span class="report-card-title">Students by Program</span>
+    </div>
+    {% if program_stats %}
+    <div style="padding:1rem;">
+      {% for p in program_stats %}
+      {% set max_count = program_stats[0].cnt %}
+      {% set bar_pct   = ((p.cnt / max_count) * 100)|int %}
+      <div style="margin-bottom:1.1rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;">
+          <span style="font-size:.82rem;color:var(--text-primary);font-weight:500;">{{ p.program }}</span>
+          <span style="font-size:.82rem;font-weight:700;color:var(--primary-light);">{{ p.cnt }}</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width:{{ bar_pct }}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:2rem;">
+      <div class="empty-state-icon" style="font-size:2rem;">📭</div>
+      <h3 style="font-size:.95rem;">No program data yet</h3>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Enrollment Breakdown Pie-like -->
+  <div class="report-card">
+    <div class="report-card-header">
+      <span>📊</span>
+      <span class="report-card-title">Enrollment Status Breakdown</span>
+    </div>
+    <div style="padding:1.75rem;">
+      {% set total_enr = total_approved + total_pending + total_rejected %}
+
+      {% if total_enr > 0 %}
+      {% set app_pct = ((total_approved / total_enr) * 100)|round(1) %}
+      {% set pen_pct = ((total_pending  / total_enr) * 100)|round(1) %}
+      {% set rej_pct = ((total_rejected / total_enr) * 100)|round(1) %}
+
+      <!-- Visual bar chart -->
+      <div style="display:flex;height:36px;border-radius:var(--radius-full);overflow:hidden;margin-bottom:1.5rem;">
+        {% if app_pct > 0 %}<div style="width:{{ app_pct }}%;background:var(--success);"></div>{% endif %}
+        {% if pen_pct > 0 %}<div style="width:{{ pen_pct }}%;background:var(--warning);"></div>{% endif %}
+        {% if rej_pct > 0 %}<div style="width:{{ rej_pct }}%;background:var(--danger);"></div>{% endif %}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.9rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            <div style="width:12px;height:12px;border-radius:50%;background:var(--success);"></div>
+            <span style="font-size:.875rem;color:var(--text-secondary);">Approved</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <span style="font-weight:700;color:var(--success);">{{ total_approved }}</span>
+            <span style="font-size:.8rem;color:var(--text-muted);">({{ app_pct }}%)</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            <div style="width:12px;height:12px;border-radius:50%;background:var(--warning);"></div>
+            <span style="font-size:.875rem;color:var(--text-secondary);">Pending</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <span style="font-weight:700;color:var(--warning);">{{ total_pending }}</span>
+            <span style="font-size:.8rem;color:var(--text-muted);">({{ pen_pct }}%)</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            <div style="width:12px;height:12px;border-radius:50%;background:var(--danger);"></div>
+            <span style="font-size:.875rem;color:var(--text-secondary);">Rejected</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <span style="font-weight:700;color:var(--danger);">{{ total_rejected }}</span>
+            <span style="font-size:.8rem;color:var(--text-muted);">({{ rej_pct }}%)</span>
+          </div>
+        </div>
+        <div class="divider" style="margin:.25rem 0;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:.875rem;font-weight:600;color:var(--text-primary);">Total Requests</span>
+          <span style="font-weight:700;color:var(--primary-light);">{{ total_enr }}</span>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="empty-state" style="padding:2rem;">
+        <div class="empty-state-icon" style="font-size:2rem;">📊</div>
+        <h3 style="font-size:.95rem;">No enrollment data yet</h3>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<style>
+  @media(max-width:860px){
+    .report-card+div>div:last-child{grid-column:1/-1}
+    .report-card+div{grid-template-columns:1fr!important}
+  }
+</style>
+{% endblock %}

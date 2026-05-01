@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <h2 class="page-title">👤 My Profile</h2>
+  <p class="page-subtitle">Manage your personal information and account settings</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+
+  <!-- Profile & Academic Info -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Personal & Academic Details</span>
+      <span class="student-id-badge">{{ student.student_id }}</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('student_profile') }}">
+      <h5 style="color:var(--primary-light);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">Personal Information</h5>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="first_name">First Name</label>
+          <input id="first_name" type="text" name="first_name" class="form-control" value="{{ student.first_name }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="last_name">Last Name</label>
+          <input id="last_name" type="text" name="last_name" class="form-control" value="{{ student.last_name }}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="text" class="form-control" value="{{ student.email }}" disabled style="opacity:.6;cursor:not-allowed;">
+        <small style="color:var(--text-muted);font-size:.75rem;">Email cannot be changed. Contact admin for help.</small>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number</label>
+          <input id="phone" type="tel" name="phone" class="form-control" value="{{ student.phone or '' }}" placeholder="+91 98765 43210">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="date_of_birth">Date of Birth</label>
+          <input id="date_of_birth" type="date" name="date_of_birth" class="form-control" value="{{ student.date_of_birth or '' }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="address">Address</label>
+        <input id="address" type="text" name="address" class="form-control" value="{{ student.address or '' }}" placeholder="City, State">
+      </div>
+
+      <hr class="section-divider">
+      <h5 style="color:var(--primary-light);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">Academic Information</h5>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="program">Program</label>
+          <select id="program" name="program" class="form-control">
+            {% for prog in [
+              'Computer Science and Engineering (CSE)',
+              'Artificial Intelligence and Machine Learning (AIML)',
+              'Information Technology (IT)',
+              'Electronics and Communication Engineering (ECE)',
+              'Mechanical Engineering (ME)',
+              'Civil Engineering (CE)',
+              'Business Administration (BBA)',
+              'Master of Computer Applications (MCA)',
+              'Master of Business Administration (MBA)',
+              'Other'
+            ] %}
+            <option value="{{ prog }}" {% if student.program==prog %}selected{% endif %}>{{ prog }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="semester">Current Semester</label>
+          <select id="semester" name="semester" class="form-control" onchange="updateYearPreview(this.value)">
+            {% for s in [1,2,3,4,5,6,7,8] %}
+            <option value="{{ s }}" {% if (student.semester or 1) == s %}selected{% endif %}>Semester {{ s }}</option>
+            {% endfor %}
+          </select>
+          <div id="yearPreview" style="margin-top:.5rem;font-size:.8rem;color:var(--accent);font-weight:600;">
+            📅 Auto-detected: <span id="yearLabel"></span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+      <h5 style="color:var(--primary-light);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">Change Password <span style="color:var(--text-muted);font-weight:400;">(optional)</span></h5>
+
+      <div class="form-group">
+        <label class="form-label" for="current_password">Current Password</label>
+        <input id="current_password" type="password" name="current_password" class="form-control" placeholder="Enter current password">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="new_password">New Password</label>
+          <input id="new_password" type="password" name="new_password" class="form-control" placeholder="Min. 6 characters">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="confirm_new_password">Confirm New Password</label>
+          <input id="confirm_new_password" type="password" name="confirm_new_password" class="form-control" placeholder="Repeat new password">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:.5rem;">💾 Save Changes</button>
+    </form>
+  </div>
+
+  <!-- Quick Info Panel -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+    <div class="stat-card" style="text-align:center;">
+      <div class="profile-avatar-lg" style="margin:0 auto 1rem;">{{ student.first_name[0] }}{{ student.last_name[0] }}</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text-white);">{{ student.first_name }} {{ student.last_name }}</div>
+      <div style="color:var(--text-secondary);font-size:.875rem;margin:.35rem 0;">{{ student.email }}</div>
+      <div style="margin-top:.75rem;"><span class="student-id-badge">{{ student.student_id }}</span></div>
+    </div>
+
+    <div class="card" style="padding:1.25rem;">
+      <div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:1rem;">Account Info</div>
+      <div style="display:flex;flex-direction:column;gap:.75rem;font-size:.875rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Program</span><span style="color:var(--text-primary);font-weight:500;text-align:right;max-width:60%;">{{ student.program or '—' }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Year</span>
+          <span style="color:var(--text-primary);font-weight:500;">
+            {% set y = student.year_of_study or 1 %}
+            {% if y == 1 %}1st{% elif y == 2 %}2nd{% elif y == 3 %}3rd{% else %}{{ y }}th{% endif %} Year
+          </span>
+        </div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Semester</span><span style="color:var(--accent);font-weight:600;">Sem {{ student.semester or 1 }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Phone</span><span style="color:var(--text-primary);font-weight:500;">{{ student.phone or '—' }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">DOB</span><span style="color:var(--text-primary);font-weight:500;">{{ student.date_of_birth or '—' }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Registered</span><span style="color:var(--text-primary);font-weight:500;">{{ student.created_at[:10] }}</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:1.25rem;border-color:rgba(99,102,241,.25);">
+      <div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;">Quick Links</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+        <a href="{{ url_for('student_courses') }}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">📚 Browse Courses</a>
+        <a href="{{ url_for('student_enrollments') }}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">📋 My Enrollments</a>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">🏠 Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media(max-width:860px){
+    .page-header+div{grid-template-columns:1fr!important}
+  }
+</style>
+<script>
+  function updateYearPreview(sem) {
+    const s = parseInt(sem);
+    const year = Math.ceil(s / 2);
+    const labels = ['', '1st Year', '2nd Year', '3rd Year', '4th Year'];
+    document.getElementById('yearLabel').textContent = labels[year] || year + 'th Year';
+  }
+  // Run on page load so info shows immediately
+  updateYearPreview(document.getElementById('semester').value || 1);
+</script>
+{% endblock %}

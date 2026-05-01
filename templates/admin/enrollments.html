@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+{% block title %}Enrollments{% endblock %}
+{% block topbar_title %}📋 Manage Enrollments{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <h2 class="page-title">Enrollments</h2>
+  <p class="page-subtitle">Review and approve or reject student enrollment requests</p>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+  <a href="{{ url_for('admin_enrollments', status='all') }}"      class="filter-tab {% if status_filter=='all'      %}active{% endif %}">All</a>
+  <a href="{{ url_for('admin_enrollments', status='pending') }}"  class="filter-tab {% if status_filter=='pending'  %}active{% endif %}">⏳ Pending</a>
+  <a href="{{ url_for('admin_enrollments', status='approved') }}" class="filter-tab {% if status_filter=='approved' %}active{% endif %}">✓ Approved</a>
+  <a href="{{ url_for('admin_enrollments', status='rejected') }}" class="filter-tab {% if status_filter=='rejected' %}active{% endif %}">✕ Rejected</a>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  <div class="card-header" style="padding:1.1rem 1.5rem;">
+    <span class="card-title">
+      {% if status_filter == 'all' %}All Enrollments{% else %}{{ status_filter|capitalize }} Enrollments{% endif %}
+      <span style="margin-left:.5rem;background:rgba(99,102,241,.15);color:var(--primary-light);border-radius:var(--radius-full);padding:.15rem .65rem;font-size:.75rem;font-weight:700;">{{ enrollments|length }}</span>
+    </span>
+  </div>
+
+  {% if enrollments %}
+  <div class="table-container" style="border:none;border-radius:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Course</th>
+          <th>Status</th>
+          <th>Applied On</th>
+          <th>Last Updated</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in enrollments %}
+        <tr>
+          <td><span class="student-id-badge" style="font-size:.7rem;">{{ e.stu_id }}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:.6rem;">
+              <div class="user-avatar" style="width:30px;height:30px;font-size:.72rem;flex-shrink:0;">{{ e.first_name[0] }}{{ e.last_name[0] }}</div>
+              <strong>{{ e.first_name }} {{ e.last_name }}</strong>
+            </div>
+          </td>
+          <td>
+            <span class="course-code-badge">{{ e.course_code }}</span>
+            <span style="margin-left:.35rem;font-size:.83rem;color:var(--text-secondary);">{{ e.course_name }}</span>
+          </td>
+          <td><span class="badge badge-{{ e.status }}">{% if e.status=='approved' %}✓{% elif e.status=='pending' %}⏳{% else %}✕{% endif %} {{ e.status|capitalize }}</span></td>
+          <td style="color:var(--text-muted);font-size:.8rem;white-space:nowrap;">{{ e.enrolled_at[:16] }}</td>
+          <td style="color:var(--text-muted);font-size:.8rem;white-space:nowrap;">{{ e.updated_at[:16] }}</td>
+          <td>
+            {% if e.status == 'pending' %}
+            <div style="display:flex;gap:.4rem;">
+              <form method="POST" action="{{ url_for('admin_approve_enrollment', eid=e.id, status=status_filter) }}">
+                <button type="submit" class="btn btn-success btn-sm">✓ Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin_reject_enrollment', eid=e.id, status=status_filter) }}">
+                <button type="submit" class="btn btn-danger btn-sm">✕ Reject</button>
+              </form>
+            </div>
+            {% elif e.status == 'approved' %}
+            <form method="POST" action="{{ url_for('admin_reject_enrollment', eid=e.id, status=status_filter) }}"
+                  onsubmit="return confirm('Revoke this approved enrollment?');">
+              <button type="submit" class="btn btn-danger btn-sm">✕ Revoke</button>
+            </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('admin_approve_enrollment', eid=e.id, status=status_filter) }}">
+              <button type="submit" class="btn btn-success btn-sm">✓ Re-approve</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📭</div>
+    <h3>No {{ status_filter if status_filter != 'all' else '' }} enrollment records</h3>
+    <p>{{ 'Enrollment requests will appear here once students apply.' if status_filter=='all' else 'No enrollments with this status found.' }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

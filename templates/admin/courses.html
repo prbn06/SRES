@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Courses{% endblock %}
+{% block topbar_title %}📚 Manage Courses{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h2 class="page-title">Courses</h2>
+      <p class="page-subtitle">Add, edit, or remove courses and manage their capacity</p>
+    </div>
+    <a href="{{ url_for('admin_add_course') }}" class="btn btn-primary">+ Add New Course</a>
+  </div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  <div class="card-header" style="padding:1.1rem 1.5rem;">
+    <span class="card-title">
+      All Courses
+      <span style="margin-left:.5rem;background:rgba(99,102,241,.15);color:var(--primary-light);border-radius:var(--radius-full);padding:.15rem .65rem;font-size:.75rem;font-weight:700;">{{ courses|length }}</span>
+    </span>
+  </div>
+
+  {% if courses %}
+  <div class="table-container" style="border:none;border-radius:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Course Name</th>
+          <th>Credits</th>
+          <th>Capacity</th>
+          <th>Enrolled</th>
+          <th>Fill Rate</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in courses %}
+        {% set pct = ((c.enrolled_count / c.capacity) * 100)|int if c.capacity > 0 else 0 %}
+        <tr>
+          <td><span class="course-code-badge">{{ c.course_code }}</span></td>
+          <td>
+            <strong>{{ c.course_name }}</strong>
+            {% if c.description %}
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ c.description }}">{{ c.description }}</div>
+            {% endif %}
+          </td>
+          <td><span class="badge badge-credit">{{ c.credits }} cr</span></td>
+          <td style="font-weight:600;color:var(--text-primary);">{{ c.capacity }}</td>
+          <td>
+            <span style="font-weight:700;color:{% if pct >= 100 %}var(--danger){% elif pct >= 75 %}var(--warning){% else %}var(--success){% endif %};">
+              {{ c.enrolled_count }}
+            </span>
+          </td>
+          <td style="min-width:120px;">
+            <div class="capacity-bar" style="height:6px;margin-bottom:.25rem;">
+              <div class="capacity-fill {% if pct >= 100 %}full{% endif %}" style="width:{{ pct }}%;"></div>
+            </div>
+            <span style="font-size:.72rem;color:var(--text-muted);">{{ pct }}%</span>
+          </td>
+          <td><span class="badge badge-{{ c.status }}">{{ c.status|capitalize }}</span></td>
+          <td>
+            <div style="display:flex;gap:.4rem;align-items:center;">
+              <a href="{{ url_for('admin_edit_course', cid=c.id) }}" class="btn btn-secondary btn-sm">✏ Edit</a>
+              <form method="POST" action="{{ url_for('admin_delete_course', cid=c.id) }}"
+                    onsubmit="return confirm('Delete course {{ c.course_name }}? All related enrollments will also be deleted.');">
+                <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📚</div>
+    <h3>No courses found</h3>
+    <p>Add courses using the button above to get started.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
