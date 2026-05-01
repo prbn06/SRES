@@ -113,6 +113,10 @@ SRES/
         ├── courses.html    # Course catalog
         └── enrollments.html# Enrollment history
 ```
+<img width="1915" height="907" alt="Screenshot 2026-04-23 213254" src="https://github.com/user-attachments/assets/39a2146f-b07d-4648-9e07-157aa8c71486" />
+<img width="771" height="898" alt="Screenshot 2026-04-23 213958" src="https://github.com/user-attachments/assets/9a720167-1ae8-4d3e-9a41-2318200dfafb" />
+<img width="1589" height="902" alt="Screenshot 2026-04-23 220752" src="https://github.com/user-attachments/assets/d8ff21de-c862-4261-9115-b77318cc67ff" />
+<img width="1446" height="858" alt="Screenshot 2026-04-23 220120" src="https://github.com/user-attachments/assets/8c9d8742-1cb4-4a62-b1c7-3c227d55b636" />
 
 ---
 
